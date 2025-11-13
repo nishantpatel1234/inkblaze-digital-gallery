@@ -2,20 +2,43 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Instagram, Mail } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+
+const contactSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  message: z.string().trim().min(1, "Message is required").max(1000, "Message must be less than 1000 characters"),
+});
+
+type ContactFormValues = z.infer<typeof contactSchema>;
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      message: "",
+    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (data: ContactFormValues) => {
+    // Data is already validated by zod schema
+    console.log("Validated form data:", data);
     toast.success("Message sent! We'll get back to you soon.");
-    setFormData({ name: "", email: "", message: "" });
+    form.reset();
   };
 
   return (
@@ -36,63 +59,73 @@ const Contact = () => {
           <div className="grid md:grid-cols-2 gap-12">
             {/* Contact Form */}
             <div className="animate-fade-in">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-semibold mb-2">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent-red"
-                    placeholder="Your name"
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold">Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Your name"
+                            className="px-4 py-3 rounded-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent-red"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                <div>
-                  <label className="block text-sm font-semibold mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent-red"
-                    placeholder="your@email.com"
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold">Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="your@email.com"
+                            className="px-4 py-3 rounded-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent-red"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                <div>
-                  <label className="block text-sm font-semibold mb-2">
-                    Message
-                  </label>
-                  <textarea
-                    required
-                    rows={6}
-                    value={formData.message}
-                    onChange={(e) =>
-                      setFormData({ ...formData, message: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent-red resize-none"
-                    placeholder="Tell us what's on your mind..."
+                  <FormField
+                    control={form.control}
+                    name="message"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold">Message</FormLabel>
+                        <FormControl>
+                          <textarea
+                            rows={6}
+                            className="w-full px-4 py-3 rounded-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent-red resize-none"
+                            placeholder="Tell us what's on your mind..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full bg-accent-red hover:bg-accent-red/90 text-white"
-                >
-                  Send Message
-                </Button>
-              </form>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full bg-accent-red hover:bg-accent-red/90 text-white"
+                  >
+                    Send Message
+                  </Button>
+                </form>
+              </Form>
             </div>
 
             {/* Contact Info */}
